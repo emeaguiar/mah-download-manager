@@ -9,12 +9,59 @@
  * License: GPL2
  */
 class Mah_Download_Manager {
+    private $mdm_db_version;
     private $uploadsDirectory;
 
     function __construct() {
+        $this->mdb_db_version = 1;
         $this->uploadsDirectory = wp_upload_dir( current_time( 'mysql' ) );
+        register_activation_hook( __FILE__, array( $this, 'install' ) );
         add_action( 'admin_menu', array( $this, 'register_menu_pages' ) );
         add_action( 'mdm_display_messages', array( $this, 'display_messages' ) );
+    }
+
+    function install() {
+        $current_db_version = get_option( 'mdm_db_version' );
+        if ( ! $current_db_version ) {
+            global $wpdb;
+
+            $this->table_name = $wpdb->prefix . "mah_download_manager";
+            $charset_collate = '';
+
+            if ( ! empty( $wpdb->charset ) ) {
+                $charset_collate = "DEFAULT CHARACTER SET {$wpdb->charset}";
+            }
+
+            if ( ! empty( $wpdb->collate ) ) {
+                $charset_collate .= " COLLATE {$wpdb->collate}";
+            }
+
+            $sql = "CREATE TABLE $this->table_name (
+                        id mediumint(9) NOT NULL AUTO_INCREMENT,
+                        date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+                        name tinytext NOT NULL,
+                        type tinytext NOT NULL,
+                        size bigint NOT NULL,
+                        url varchar(255) DEFAULT '' NOT NULL,
+                        UNIQUE KEY id (id)
+                    ) $charset_collate;";
+
+            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+            dbDelta( $sql );
+
+            add_option( 'mdm_db_version', 1 );
+        } elseif ( $current_db_version < $this->mdb_db_version ) {
+            $this->upgrade( $current_db_version );
+        }
+
+    }
+
+    /**
+     * Reserved for upgrading purposes
+     */
+    function upgrade( $current ) {
+
     }
 
     function register_menu_pages() {
@@ -96,8 +143,15 @@ class Mah_Download_Manager {
             wp_die( $response->get_error_message(), __( 'Error uploading the file.', 'mah-download-manager' ) );
         }
 
-        wp_redirect( admin_url( 'admin.php?page=mah-download-manager&message=1' ) );
-        exit;
+        $file_id = $this->store_data( $file );
+
+        if ( $file_id ) {
+            wp_redirect( admin_url( 'admin.php?page=mah-download-manager&message=1' ) );
+            exit();
+        } else {
+            wp_die( 'There was an error saving the data to the database' );
+        }
+
     }
 
     function move_file( $from, $to ) {
@@ -109,8 +163,24 @@ class Mah_Download_Manager {
         }
     }
 
+    function store_data( $file ) {
+        global $wpdb;
+
+        $this->table_name = $wpdb->prefix . "mah_download_manager";
+
+        $data = array(
+            'name' => sanitize_file_name( $file[ 'name' ] ),
+            'type' => sanitize_mime_type( $file[ 'type' ] ),
+            'size' => intval( $file[ 'size' ] ),
+            'date' => current_time( 'mysql' ),
+            'url' => trailingslashit( $this->uploadsDirectory[ 'url' ] ) . $file[ 'name' ]
+        );
+
+        return $wpdb->insert( $this->table_name, $data );
+    }
+
     function display_messages() {
-        if ( ! isset( $_GET[ 'message' ] ) ) {
+        if ( ! isset( $_GET[ 'message' ] ) || ! intval( $_GET[ 'message' ] ) ) {
             return;
         }
 
