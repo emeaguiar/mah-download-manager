@@ -110,7 +110,7 @@ class Mah_Download_Manager {
     }
 
     function display_messages() {
-        if ( ! isset( $_GET[ 'message' ] ) ) {
+        if ( ! isset( $_GET[ 'message' ] ) || ! intval( $_GET[ 'message' ] ) ) {
             return;
         }
 
