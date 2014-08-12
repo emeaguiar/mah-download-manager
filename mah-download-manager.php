@@ -43,6 +43,7 @@ class Mah_Download_Manager {
                         type tinytext NOT NULL,
                         size bigint NOT NULL,
                         url varchar(255) DEFAULT '' NOT NULL,
+                        path varchar(255) DEFAULT '' NOT NULL,
                         UNIQUE KEY id (id)
                     ) $charset_collate;";
 
@@ -92,7 +93,7 @@ class Mah_Download_Manager {
                 <?php wp_nonce_field( 'mah-download-manager' ); ?>
                 <label for="mdm-file"><?php _e( 'File', 'mah-download-manager' ); ?>:</label>
                 <input type="file" id="mdm-file" name="mdm-file">
-                <input type="submit" value="<?php _e( 'Upload', 'mah-download-manager' ); ?>" name="mdm-upload">
+                <input type="submit" class="button" value="<?php _e( 'Upload', 'mah-download-manager' ); ?>" name="mdm-upload">
             </form>
         </div>
 <?php
@@ -135,7 +136,7 @@ class Mah_Download_Manager {
         }
 
         $fileTempDir = $file[ 'tmp_name' ];
-        $filename = trailingslashit( $this->uploadsDirectory[ 'path' ] ) . $file[ 'name' ];
+        $filename = trailingslashit( $this->uploadsDirectory[ 'path' ] ) . sanitize_file_name( $file[ 'name' ] );
 
         $response = $this->move_file( $fileTempDir, $filename );
 
@@ -173,7 +174,8 @@ class Mah_Download_Manager {
             'type' => sanitize_mime_type( $file[ 'type' ] ),
             'size' => intval( $file[ 'size' ] ),
             'date' => current_time( 'mysql' ),
-            'url' => trailingslashit( $this->uploadsDirectory[ 'url' ] ) . $file[ 'name' ]
+            'url' => trailingslashit( $this->uploadsDirectory[ 'url' ] ) . $file[ 'name' ],
+            'path' => trailingslashit( $this->uploadsDirectory[ 'path' ] ) . sanitize_file_name( $file[ 'name' ] )
         );
 
         return $wpdb->insert( $this->table_name, $data );
