@@ -1,4 +1,7 @@
 <?php
+    /**
+     * Class to manage List Tables
+     */
     class Mah_Download_Manager_List extends WP_List_Table {
 
         function __construct() {

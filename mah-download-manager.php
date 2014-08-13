@@ -18,6 +18,7 @@ class Mah_Download_Manager {
         register_activation_hook( __FILE__, array( $this, 'install' ) );
         add_action( 'admin_menu', array( $this, 'register_menu_pages' ) );
         add_action( 'mdm_display_messages', array( $this, 'display_messages' ) );
+        add_action( 'toplevel_page_mah-download-manager', array( $this, 'custom_action' ) );
     }
 
     function install() {
@@ -191,16 +192,80 @@ class Mah_Download_Manager {
             return;
         }
 
-        $message = $_GET[ 'message' ];
+        $message = (int) $_GET[ 'message' ];
 
         switch ( $message ) {
             case 1:
                 $class = 'updated';
                 $text = __( 'File uploaded succesfully.', 'mah-download-manager' );
                 break;
+            case 2:
+                $class = 'updated';
+                $text = __( 'The selected file has been removed.', 'mah-download-manager' );
+                break;
         }
 
         echo '<div class="' . $class . '"><p>' . $text . '</p></div>';
+    }
+
+    function custom_action() {
+        if ( ! isset( $_GET[ 'action' ] ) ) {
+            return;
+        }
+
+        if ( ! isset( $_GET[ 'file_id' ] ) ) {
+            wp_die( __( 'You need to select a file to work on!' ) );
+        }
+
+        $action  = $_GET[ 'action' ];
+        $file_id = (int) $_GET[ 'file_id' ];
+
+        switch ( $action ) {
+            case 'delete':
+                if ( isset( $_GET[ 'confirm' ] ) && $_GET[ 'confirm' ] == 1 ) {
+                    $mdm_method = '';
+
+                    $url = wp_nonce_url( 'admin.php?page=mah-download-manager&action=delete', 'mah-download-manager' );
+                    if ( ! $creds = request_filesystem_credentials( $url, $mdm_method, false, false ) ) {
+                        return true;
+                    }
+
+                    if ( ! WP_Filesystem( $creds ) ) {
+                        request_filesystem_credentials( $url, $mdm_method, true, false );
+                        return true;
+                    }
+
+                    $fileTempData = $_FILES[ 'mdm-file' ];
+
+                    $this->delete_file( $file_id );
+                } else {
+                    echo '<p>' . __( 'Are you sure you want to delete this file? This action cannot be reversed.' ) . '</p>';
+                    echo '<a href="' . add_query_arg( array( 'confirm' => 1 ) ) . '" class="button-primary">' . __( 'Delete anyways', 'mah_download_manager' ) . '</a> ';
+                    echo '<a href="' . admin_url( 'admin.php?page=mah-download-manager' ) . '" class="button">' . __( 'Cancel' )  . '</a>';
+                }
+                break;
+            default:
+                wp_die( __( 'That action is invalid!' ) );
+                break;
+        }
+    }
+
+    function delete_file( $id ) {
+        global $wpdb, $wp_filesystem;
+        $table_name = $wpdb->prefix . "mah_download_manager";
+
+        $file_path = $wpdb->get_var( $wpdb->prepare( "SELECT path FROM $table_name WHERE id = %d", $id ) );
+
+        $file_deleted = ( $wp_filesystem->delete( $file_path ) ) ? true : new WP_Error( 'delete_file_error', __( 'There was an error removing the file from the server. Check the path?', 'mah_download_manager' ) );
+
+        $row_deleted = ( $wpdb->delete( $table_name, array( 'id' => $id ) ) ) ? true : new WP_Error( 'delete_row_error', __( 'There was an error removing the data from the database.', 'mah_download_manager' ) );
+
+        if ( ! is_wp_error( $file_deleted ) && ! is_wp_error( $row_deleted ) ) {
+            wp_redirect( admin_url( 'admin.php?page=mah-download-manager&message=2' ) );
+            exit;
+        } else {
+            wp_die( __( 'There were errors while deleting the file.', 'mah_download_manager' ) );
+        }
     }
 }
 
