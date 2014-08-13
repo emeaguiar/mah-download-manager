@@ -58,6 +58,10 @@
             switch ( $column_name ) {
                 case 'file':
                     echo '<a href="' . $item->url . '">' . $item->name . '</a>';
+                    $actions = array(
+                        'delete' => '<a href="' . add_query_arg( array( 'action' => 'delete', 'file_id' => $item->id ) ) . '">' . __( 'Delete' ) . '</a>'
+                    );
+                    echo $this->row_actions( $actions );
                     break;
                 default:
                     echo $item->$column_name;
