@@ -25,7 +25,7 @@ class Mah_Download_Manager {
         if ( ! $current_db_version ) {
             global $wpdb;
 
-            $this->table_name = $wpdb->prefix . "mah_download_manager";
+            $table_name = $wpdb->prefix . "mah_download_manager";
             $charset_collate = '';
 
             if ( ! empty( $wpdb->charset ) ) {
@@ -36,7 +36,7 @@ class Mah_Download_Manager {
                 $charset_collate .= " COLLATE {$wpdb->collate}";
             }
 
-            $sql = "CREATE TABLE $this->table_name (
+            $sql = "CREATE TABLE $table_name (
                         id mediumint(9) NOT NULL AUTO_INCREMENT,
                         date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
                         name tinytext NOT NULL,
@@ -71,12 +71,17 @@ class Mah_Download_Manager {
     }
 
     function display_menu_page() {
-
+        load_template( plugin_dir_path( __FILE__ ) . 'includes/class-mah-download-manager-list.php', true );
 ?>
         <div class="wrap">
             <h2><?php _e( 'Mah Download manager', 'mah_download_manager' ); ?> <a class="add-new-h2" href="<?php echo admin_url( 'admin.php?page=mah-download-manager/new' ); ?>"><?php _e( 'Add new file', 'mah_download_manager' ); ?></a></h2>
-            <?php  do_action( 'mdm_display_messages' ); ?>
-            <p>This space will display a list of files...</p>
+            <?php
+                do_action( 'mdm_display_messages' );
+
+                $list = new Mah_Download_Manager_List;
+                $list->prepare_items();
+                $list->display();
+            ?>
         </div>
 <?php
     }
@@ -167,7 +172,7 @@ class Mah_Download_Manager {
     function store_data( $file ) {
         global $wpdb;
 
-        $this->table_name = $wpdb->prefix . "mah_download_manager";
+        $table_name = $wpdb->prefix . "mah_download_manager";
 
         $data = array(
             'name' => sanitize_file_name( $file[ 'name' ] ),
@@ -178,7 +183,7 @@ class Mah_Download_Manager {
             'path' => trailingslashit( $this->uploadsDirectory[ 'path' ] ) . sanitize_file_name( $file[ 'name' ] )
         );
 
-        return $wpdb->insert( $this->table_name, $data );
+        return $wpdb->insert( $table_name, $data );
     }
 
     function display_messages() {
