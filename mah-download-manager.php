@@ -135,7 +135,7 @@ class Mah_Download_Manager {
     }
 
     function upload_file( $file ) {
-        $file = ( ! empty( $file ) ) ? $file : new WP_Error( 'empty_file', __( "Seemls like you didn't upload a file.", 'mah-download-manager' ) );
+        $file = ( ! empty( $file ) ) ? $file : new WP_Error( 'empty_file', __( "Seems like you didn't upload a file.", 'mah-download-manager' ) );
 
         if ( is_wp_error( $file ) ) {
             wp_die( $file->get_error_message(), __( 'Error uploading the file.', 'mah-download-manager' ) );
