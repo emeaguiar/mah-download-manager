@@ -481,6 +481,12 @@ function delete_file( $file_id ) {
 	exit;
 }
 
+/**
+ * Manage actions that lead to redirects inside the plugin.
+ * We need this because redirects must happen before anything is rendered in the page.
+ *
+ * @return void
+ */
 function redirect_manager() {
 	$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
 
