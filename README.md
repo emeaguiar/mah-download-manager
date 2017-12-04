@@ -6,7 +6,7 @@ The plugin has been updated to show my new code patterns and things I have learn
 
 If you came here through the article you can check out the master branch which will keep the old code, however, I don't recommend using it in prodcution environments.
 
-I won;t be giving any support to this plugin, so while I have updated it to new standards, I also don't recommend using this new version.
+I won't be giving any support to this plugin, so while I have updated it to new standards, I also don't recommend using this new version.
 
 ## Simple download manager for WordPress
 
