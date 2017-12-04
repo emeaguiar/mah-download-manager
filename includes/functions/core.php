@@ -23,16 +23,15 @@ function setup() {
 		return __NAMESPACE__ . "\\$function";
 	};
 
-	add_action( 'init', $n( 'i18n' ) );
-	add_action( 'init', $n( 'init' ) );
+	add_action( 'admin_init',                         $n( 'i18n' ) );
+	add_action( 'admin_init',                         $n( 'init' ) );
+	add_action( 'admin_init',                         $n( 'set_uploads_directory' ) );
 
-	add_action( 'admin_menu', $n( 'register_menu_pages' ) );
-	add_action( 'mah_download_display_messages', $n( 'display_messages' ) );
-	add_action( 'toplevel_page_mah-download-manager', $n( 'confirm_delete' ) );
+	add_action( 'admin_menu',                         $n( 'register_menu_pages' ) );
+	add_action( 'mah_download_display_messages',      $n( 'display_messages' ) );
+	add_action( 'admin_init',                         $n( 'confirm_delete' ) );
 
 	do_action( 'mah_download_loaded' );
-
-	set_uploads_directory();
 }
 
 /**

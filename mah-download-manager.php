@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Mah Download Manager
  * Plugin URI:  http://marioaguiar.net
- * Description: A simple download manager for wordpress
- * Version:     0.1.0
+ * Description: A simple download manager for WordPress
+ * Version:     2.0
  * Author:      Mario Aguiar
  * Author URI:  http://marioaguiar.net
  * License:     GPLv2+
