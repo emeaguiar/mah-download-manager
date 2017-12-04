@@ -88,7 +88,13 @@ class Mah_Download_Manager_List extends \WP_List_Table {
 				<a href="<?php esc_url( $item->url ); ?>"><?php echo esc_html( $item->name ); ?></a>
 <?php
 				$actions = array(
-					'delete' => '<a href="' . add_query_arg( array( 'action' => 'delete', 'file_id' => $item->id ) ) . '">' . esc_html__( 'Delete' ) . '</a>',
+					'delete' =>
+						'<a href="' . add_query_arg(
+							array(
+								'file_id' => $item->id,
+							),
+							admin_url( 'admin.php?page=mah-download-manager/delete' )
+						) . '">' . esc_html__( 'Delete', 'mah_download' ) . '</a>',
 				);
 				echo $this->row_actions( $actions );
 				break;
